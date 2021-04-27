@@ -94,30 +94,26 @@ class GamePlay:
             location_C = self.map.find_item('3')
 
             if location_B is not None:
-                enemy = Enemy()
-                enemy.name = 'Blinky'
+                enemy = Enemy(Properties.REDGHOST)
                 self.add_enemies(enemy, location_B)
 
             else:
                 none_count+=1
 
             if location_I is not None:
-                enemy = Enemy()
-                enemy.name = 'Inky'
+                enemy = Enemy(Properties.BLUEGHOST)
                 self.add_enemies(enemy, location_I)
             else:
                 none_count+=1
 
             if location_P is not None:
-                enemy = Enemy()
-                enemy.name = 'Pinky'
+                enemy = Enemy(Properties.PINKGHOST)
                 self.add_enemies(enemy, location_P)
             else:
                 none_count+=1
 
             if location_C is not None:
-                enemy = Enemy()
-                enemy.name = 'Clyde'
+                enemy = Enemy(Properties.ORANGEGHOST)
                 self.add_enemies(enemy, location_C)
             else:
                 none_count+=1
@@ -126,11 +122,11 @@ class GamePlay:
                 return
 
     def add_enemies(self, enemy, location):
-        enemy.x = location[0]
-        enemy.y = location[1]
-        enemy.start_pos = enemy.x, enemy.y
-        self.map.grid[enemy.x][enemy.y] = 'O'
-        enemy.x, enemy.y = self.map.find_coordinates(enemy.x, enemy.y)
+        row = location[0]
+        col = location[1]
+        enemy.start_pos = row, col
+        self.map.grid[row][col] = 'O'
+        enemy.x, enemy.y = self.map.find_coordinates(row, col)
         self.enemies.append(enemy)
 
     def __key_action(self):
@@ -173,6 +169,17 @@ class GamePlay:
 
         if self.pacman.y < 0:
             self.pacman.y = max_y
+
+        for enemy in self.enemies:
+            if enemy.x < 1:
+                enemy.x = 1
+            elif enemy.x > max_x:
+                enemy.x = max_x
+
+            if enemy.y < 1:
+                enemy.y = 1
+            elif enemy.y > max_y:
+                enemy.y = max_y
 
     def get_next(self, row, col, direction):
         next_row = row
@@ -318,6 +325,7 @@ class GamePlay:
             enemy.stop_movement()
         else:
             enemy.start_movement()
+            enemy.sleeping = False
             start = self.map.find_grid(enemy.x, enemy.y)
             start = start[1], start[0]
             # Reached pacman
@@ -331,17 +339,20 @@ class GamePlay:
 
     def run_from_player(self, enemy):
         passed_time = pygame.time.get_ticks() - self.caught_mode_time
-
-        target = self.map.find_grid(self.pacman.x, self.pacman.y)
-        target = target[1], target[0]
-
         if passed_time > Properties.GHOST_SCARED_TIME * 1000:
             enemy.mode = 'Chase'
             self.num_caught = 0
 
+        if enemy.sleeping:
+            return
+
+        target = self.map.find_grid(self.pacman.x, self.pacman.y)
+        target = target[1], target[0]
+
         enemy.start_movement()
         start = self.map.find_grid(enemy.x, enemy.y)
         start = start[1], start[0]
+
         # If reached pacman
         if target == start:
             enemy.mode = 'Caught'
@@ -414,8 +425,10 @@ class GamePlay:
 
             time = pygame.time.get_ticks()
             if self.external:
+                self.reward -= 1000
                 return
             if time > wait_time:
+                self.round_time = pygame.time.get_ticks()
                 self.gameLoop()
 
             pygame.display.flip()
@@ -466,7 +479,7 @@ class GamePlay:
             self.drawObjects()
             self.show_HUD()
 
-        self.reward = self.score * 5 - pygame.time.get_ticks()//1000
+        self.reward = self.score * 15 - pygame.time.get_ticks()//4000
 
         self.pacman.move()
         self.moveEnemies()

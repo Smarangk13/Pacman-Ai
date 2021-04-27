@@ -40,6 +40,15 @@ class Properties:
     GHOST_SCARED_SPEED = 2
     GHOST_SCARED_TIME = 6
     GHOST_CAUGHT_SPEED = 10
+    INKY_TIME = 10
+    OBJECTIVE_TIME = 3
+    CLYDE_DIST = 6
+
+    # GhostNames
+    REDGHOST = 'Blinky'
+    BLUEGHOST = 'Inky'
+    PINKGHOST = 'Pinky'
+    ORANGEGHOST = 'Clyde'
 
     # Game Map related
     WALLGAP = CHARACTERRADIUS * 3

@@ -64,15 +64,17 @@ class BetterMaps:
 
     # Find grid numbers by letter in grid
     def find_item(self, item):
-        for i in range(len(self.grid)):
-            for j in range(len(self.grid[i])):
-                if self.grid[i][j] == item:
-                    return i,j
+        for row in range(len(self.grid)):
+            for col in range(len(self.grid[row])):
+                if self.grid[row][col] == item:
+                    return row,col
 
         return None
 
     def find_coordinates(self,pos_row, pos_col):
-        return self.hLines[pos_row], self.vLines[pos_col]
+        y = self.hLines[pos_row]
+        x = self.vLines[pos_col]
+        return x,y
 
     # Find which square of the grid the click corresponds to
     def find_grid(self, mx, my):

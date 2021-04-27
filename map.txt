@@ -10,8 +10,8 @@ W T W W T W W W W O W W W W W W W W O W W W W T W W T W
 W T W W T W W W W O W W W W W W W W O W W W W T W W T W 
 O T T T T T T O O O O O O O E O O O O O O T T T T T T O 
 W T W W W W T W W O W W W G G W W W O W W T W W W W T W
-W T W W W W T W W O W O O O O O O W O W W T W W W W T W
-W T T T T T T W W O W O O O O O O W O W W T T T T T T W
+W T W W W W T W W O W 1 O O O O 2 W O W W T W W W W T W
+W T T T T T T W W O W O O O 3 O O W O W W T T T T T T W
 W O W W W W T W W O W W W W W W W W O W W T W W W W O W 
 W O W W W W T W W O O O O O C O O O O W W T W W W W O W 
 W O O O W W T W W O W W W W W W W W O W W T W W O O O W 
