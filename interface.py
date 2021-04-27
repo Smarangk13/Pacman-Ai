@@ -5,6 +5,7 @@ from collections import deque
 from Constants import Properties
 from game_grid import GamePlay
 from model import Linear_QNet, QTrainer
+from tracker import plot
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -17,7 +18,7 @@ class Agent:
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(11, 256, 3)
+        self.model = Linear_QNet(845, 256, 4)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
         self.game = GamePlay()
@@ -33,12 +34,28 @@ class Agent:
         self.score = 0
 
         # Outputs
-        self.actions = [Properties.LEFTARROW, Properties.RIGHTARROW, Properties.DOWNARROW, Properties.UPARROW]
+        # self.actions = [Properties.LEFTARROW, Properties.RIGHTARROW, Properties.DOWNARROW, Properties.UPARROW]
+        # actions options [0,0,0,1] - R
+        # actions options [0,0,1,0] - L
+        # actions options [0,1,0,0] - D
+        # actions options [1,0,0,0] - U
 
     def get_state(self):
-        grid = self.game.map.grid
+        self.grid = self.game.map.grid
+        grid = self.game.map.numerical1d(self.grid)
+        player_pos = [self.game.pacman.x, self.game.pacman.y]
+        player_lives = self.game.pacman.lives
+        score = self.game.score
+        enemies = len(self.game.enemies)
 
-        state = []
+        enemypos_list = []
+        for enemy in self.game.enemies:
+            self.enemypos_list.append(enemy.x)
+            self.enemypos_list.append(enemy.y)
+
+        state = grid + player_pos + [player_lives]
+        state += [score]+ [enemies]
+        state += enemypos_list
 
         return np.array(state, dtype=int)
 
@@ -62,7 +79,7 @@ class Agent:
     def get_action(self, state):
         # random moves: tradeoff exploration / exploitation
         self.epsilon = 80 - self.n_games
-        final_move = [0, 0, 0]
+        final_move = [0, 0, 0, 0]
         if random.randint(0, 200) < self.epsilon:
             move = random.randint(0, 2)
             final_move[move] = 1
@@ -88,30 +105,33 @@ class Agent:
             final_move = self.get_action(state_old)
 
             # perform move and get new state
-            reward, done, score = self.game.game_step(final_move, True)
+            self.game.game_step(final_move, True)
             state_new = self.get_state()
 
+            done = self.game.pacman.lives <= 0
+
             # train short memory
-            self.train_short_memory(state_old, final_move, reward, state_new, done)
+            self.train_short_memory(state_old, final_move, self.reward, state_new, done)
 
             # remember
-            self.remember(state_old, final_move, reward, state_new, done)
+            self.remember(state_old, final_move, self.reward, state_new, done)
 
             if done:
                 # train long memory, plot result
-                game.reset()
-                agent.n_games += 1
-                agent.train_long_memory()
+                score = self.game.score
+                self.game.restart()
+                self.n_games += 1
+                self.train_long_memory()
 
                 if score > record:
                     record = score
-                    agent.model.save()
+                    self.model.save()
 
-                print('Game', agent.n_games, 'Score', score, 'Record:', record)
+                print('Game', self.n_games, 'Score', score, 'Record:', record)
 
                 plot_scores.append(score)
                 total_score += score
-                mean_score = total_score / agent.n_games
+                mean_score = total_score / self.n_games
                 plot_mean_scores.append(mean_score)
                 plot(plot_scores, plot_mean_scores)
 

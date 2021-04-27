@@ -17,10 +17,13 @@ class GamePlay:
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode([Properties.WINDOWWIDTH, Properties.WINDOWHEIGHT])
         self.pacman = Player()
+        # For externally controlled games
+        self.external = False
 
         self.game_font = pygame.font.SysFont('Terminal', 45)
 
         self.score = 0
+        self.reward = 0
 
         self.map = GameMap()
         self.map.load_map()
@@ -43,6 +46,7 @@ class GamePlay:
         # Enemies
         self.enemies = []
         self.create_enemies()
+        self.num_caught = 0
 
         # Enemy images
         self.blinky = pygame.image.load('pics/blinky.png')
@@ -67,6 +71,19 @@ class GamePlay:
         self.map.color_grid()
 
         self.pacman.lives = 3
+
+        self.player_pos = self.map.player_start
+        self.pacman.x = self.player_pos[0]
+        self.pacman.y = self.player_pos[1]
+
+        # Make Pacman spot on map an Open
+        player_X = self.player_pos[0]
+        player_Y = self.player_pos[1]
+        player_grid_X, player_grid_Y = self.map.find_grid(player_X, player_Y)
+        self.map.grid[player_grid_Y][player_grid_X] = 'O'
+
+        self.enemies = []
+        self.create_enemies()
 
     def create_enemies(self):
         while True:
@@ -132,6 +149,9 @@ class GamePlay:
 
         elif Properties.RIGHTARROW in pressed:
             self.pacman.next_turn = 'Right'
+
+        if key[pygame.K_r]:
+            self.restart()
 
     # Enemies can not warp
     def warp(self):
@@ -317,6 +337,7 @@ class GamePlay:
 
         if passed_time > Properties.GHOST_SCARED_TIME * 1000:
             enemy.mode = 'Chase'
+            self.num_caught = 0
 
         enemy.start_movement()
         start = self.map.find_grid(enemy.x, enemy.y)
@@ -324,7 +345,7 @@ class GamePlay:
         # If reached pacman
         if target == start:
             enemy.mode = 'Caught'
-            print('caught')
+            self.score += 200 * self.num_caught
 
         enemy.chase(self.map.grid, target, start)
         enemy.move()
@@ -384,10 +405,16 @@ class GamePlay:
             self.pacman.x = self.player_pos[0]
             self.pacman.y = self.player_pos[1]
 
+            for enemy in self.enemies:
+                enemy.stop_movement()
+                enemy.x, enemy.y = self.map.find_coordinates(enemy.start_pos[0], enemy.start_pos[1])
+
             self.drawObjects()
             self.show_HUD()
 
             time = pygame.time.get_ticks()
+            if self.external:
+                return
             if time > wait_time:
                 self.gameLoop()
 
@@ -422,26 +449,31 @@ class GamePlay:
             self.screen.fill(Colors.BLACK)
 
     def game_step(self, agent_event, draw = False):
-        if Properties.UPARROW in agent_event:
+        self.external = True
+        if agent_event[0]:
             self.pacman.next_turn = 'Up'
 
-        elif Properties.DOWNARROW in agent_event:
+        elif agent_event[1]:
             self.pacman.next_turn = 'Down'
 
-        if Properties.LEFTARROW in agent_event:
+        elif agent_event[2]:
             self.pacman.next_turn = 'Left'
 
-        elif Properties.RIGHTARROW in agent_event:
+        else:
             self.pacman.next_turn = 'Right'
 
         if draw:
             self.drawObjects()
             self.show_HUD()
 
+        self.reward = self.score * 5 - pygame.time.get_ticks()//1000
+
         self.pacman.move()
         self.moveEnemies()
         self.collisions(self.pacman)
         self.update_map()
+        pygame.display.flip()
+        self.screen.fill(Colors.BLACK)
 
 
 if __name__ == '__main__':

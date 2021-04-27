@@ -314,6 +314,22 @@ class BetterMaps:
         self.squaresX = len(grid[0])
         self.gridlines()
 
+    @staticmethod
+    def numerical1d(grid):
+        count = 0
+        items = {'W':0, 'O':1,'T':2,'P':3} # Fixed nums for consistent training
+        grid1d = []
+        for row in grid:
+            for elem in row:
+                coded = 0
+                if elem in items:
+                    coded = items[elem]
+                else:
+                    items[elem] = count
+                    coded = count
+                    count += 1
+                grid1d.append(coded)
+        return grid1d
 
 if __name__ == '__main__':
     # Official map = 28 X 30

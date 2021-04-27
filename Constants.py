@@ -38,7 +38,7 @@ class Properties:
     PLAYERSPEED = 10
     ENEMYSPEED = 4
     GHOST_SCARED_SPEED = 2
-    GHOST_SCARED_TIME = 12
+    GHOST_SCARED_TIME = 6
     GHOST_CAUGHT_SPEED = 10
 
     # Game Map related
