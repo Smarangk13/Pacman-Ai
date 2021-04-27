@@ -1,58 +1,53 @@
 from Shapes import Circle
 from Constants import Properties
 
-class Player(Circle):
-    playerSpeed = Properties.PLAYERSPEED
+
+class Player:
+    speed = Properties.PLAYERSPEED
+    movement_speed = speed
     radius = Properties.CHARACTERRADIUS
     lives = 3
+    x = 0
+    y = 0
+    name = 'Player'
 
-    def __init__(self, x=400, y=450, r=15):
-        super().__init__(x, y, r)
+    def __init__(self):
         self.next_turn = None
 
-    # moveRight = True
-    # moveLeft = False
-    # moveUp = False
-    # moveDown = False
-
-    movement_direction = [True, False, False, False] # Old
     direction = 'Right'
 
-
-    def __no_movement(self):
-        self.movement_direction = [False for i in range(4)]
-
-    def get_direction(self):
-        return self.movement_direction.index(True)
-
-    def get_direction_str(self):
-        return self.direction
-
     def turnRight(self):
-        self.__no_movement()
-        self.movement_direction[0] = True
         self.direction = 'Right'
 
     def turnLeft(self):
-        self.__no_movement()
-        self.movement_direction[1] = True
         self.direction = 'Left'
 
     def turnUp(self):
-        self.__no_movement()
-        self.movement_direction[2] = True
         self.direction = 'Up'
 
     def turnDown(self):
-        self.__no_movement()
-        self.movement_direction[3] = True
         self.direction = 'Down'
 
     def stop_movement(self):
-        self.playerSpeed = 0
+        self.speed = 0
 
     def start_movement(self):
-        self.playerSpeed = Properties.PLAYERSPEED
+        self.speed = self.movement_speed
+
+    def move(self):
+        direction = self.direction
+
+        if direction == 'Right':
+            self.x += self.speed
+
+        elif direction == 'Left':
+            self.x -= self.speed
+
+        elif direction == 'Up':
+            self.y -= self.speed
+
+        elif direction == 'Down':
+            self.y += self.speed
 
     def makeTurn(self):
         if self.next_turn == 'Right':

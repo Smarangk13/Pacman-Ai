@@ -58,6 +58,16 @@ class GamePlay:
         self.round_time = self.start_time
         self.caught_mode_time = 0
 
+    def restart(self):
+        self.score = 0
+
+        self.map = GameMap()
+        self.map.load_map()
+        self.map.drawGrid()
+        self.map.color_grid()
+
+        self.pacman.lives = 3
+
     def create_enemies(self):
         while True:
             none_count = 0
@@ -188,8 +198,10 @@ class GamePlay:
         col, row = self.map.find_grid(player_X, player_Y)
         direction = character.direction
 
+        # If next tile is a wall stop
         next_tile = self.get_next(row, col, direction)
-        if next_tile == 'W':
+        gate_player = character.name == 'Player' and next_tile == 'G'
+        if next_tile == 'W' or gate_player:
             character.stop_movement()
             pass
         else:
@@ -197,9 +209,27 @@ class GamePlay:
 
         # For turns
         next_tile = self.get_next(row, col, character.next_turn)
-        if next_tile != 'W':
+        if next_tile != 'W' and not gate_player:
             character.makeTurn()
 
+        # # If stuck in wall
+        # if self.map.grid[row][col] == 'W':
+        #     open_row = row
+        #     open_col = col
+        #     # Check neighbors and place
+        #     if self.map.grid[row + 1][col] == 'O':
+        #         open_row = row+1
+        #
+        #     elif self.map.grid[row - 1][col] == 'O':
+        #         open_row = row-1
+        #
+        #     elif self.map.grid[row][col + 1] == 'O':
+        #         open_col = col + 1
+        #
+        #     elif self.map.grid[row][col - 1] == 'O':
+        #         open_col = col - 1
+        #
+        #     character.x, character.y = self.map.find_coordinates(open_row, open_col)
     # Remove tokens and update score
     def update_map(self):
         player_X = self.pacman.x
@@ -253,6 +283,9 @@ class GamePlay:
             elif enemy.mode == 'Run':
                 self.run_from_player(enemy)
 
+            else:
+                self.enemy_home(enemy)
+
     # Get enemeis to chase pacman but wiat until they are awake
     def chase_player(self, enemy):
         time_passed = pygame.time.get_ticks() - self.round_time
@@ -283,7 +316,7 @@ class GamePlay:
         target = target[1], target[0]
 
         if passed_time > Properties.GHOST_SCARED_TIME * 1000:
-            self.enemy_mode = 'Chase'
+            enemy.mode = 'Chase'
 
         enemy.start_movement()
         start = self.map.find_grid(enemy.x, enemy.y)
@@ -291,6 +324,19 @@ class GamePlay:
         # If reached pacman
         if target == start:
             enemy.mode = 'Caught'
+            print('caught')
+
+        enemy.chase(self.map.grid, target, start)
+        enemy.move()
+        self.collisions(enemy)
+
+    def enemy_home(self, enemy):
+        target =enemy.start_pos[0], enemy.start_pos[1]
+        start = self.map.find_grid(enemy.x, enemy.y)
+        start = start[1], start[0]
+        # Reached home
+        if target == start:
+            enemy.mode = 'Chase'
 
         enemy.chase(self.map.grid, target, start)
         enemy.move()
@@ -375,8 +421,27 @@ class GamePlay:
             pygame.display.flip()
             self.screen.fill(Colors.BLACK)
 
-    def updateData(self):
-        pass
+    def game_step(self, agent_event, draw = False):
+        if Properties.UPARROW in agent_event:
+            self.pacman.next_turn = 'Up'
+
+        elif Properties.DOWNARROW in agent_event:
+            self.pacman.next_turn = 'Down'
+
+        if Properties.LEFTARROW in agent_event:
+            self.pacman.next_turn = 'Left'
+
+        elif Properties.RIGHTARROW in agent_event:
+            self.pacman.next_turn = 'Right'
+
+        if draw:
+            self.drawObjects()
+            self.show_HUD()
+
+        self.pacman.move()
+        self.moveEnemies()
+        self.collisions(self.pacman)
+        self.update_map()
 
 
 if __name__ == '__main__':

@@ -62,6 +62,17 @@ class BetterMaps:
         self.vLines = verticalLines
         self.hLines = horizontalLines
 
+    # Find grid numbers by letter in grid
+    def find_item(self, item):
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid[i])):
+                if self.grid[i][j] == item:
+                    return i,j
+
+        return None
+
+    def find_coordinates(self,pos_row, pos_col):
+        return self.hLines[pos_row], self.vLines[pos_col]
 
     # Find which square of the grid the click corresponds to
     def find_grid(self, mx, my):
@@ -153,7 +164,7 @@ class BetterMaps:
 
                 # Powerup
                 elif square == 'P':
-                    radius = ((x1 - x0) // 2) - 5
+                    radius = ((x1 - x0) // 2)
                     pygame.draw.circle(self.screen,Colors.ORANGE,center,radius)
 
                 # Character
@@ -162,10 +173,32 @@ class BetterMaps:
                     self.player_start = center
                     pygame.draw.circle(self.screen,Colors.YELLOW,center,radius)
 
-                # Enemy
+                # Enemy - Inky
                 elif square == 'E':
                     radius = (x1 - x0) // 2
                     pygame.draw.circle(self.screen, Colors.RED, center, radius)
+
+                # Enemy - Blinky
+                elif square == '1':
+                    radius = (x1 - x0) // 2
+                    pygame.draw.circle(self.screen, Colors.BLUE, center, radius)
+
+                # Enemy - Pinky
+                elif square == '2':
+                    radius = (x1 - x0) // 2
+                    pygame.draw.circle(self.screen, Colors.PINK, center, radius)
+
+                # Enemy - Clyde
+                elif square == '3':
+                    radius = (x1 - x0) // 2
+                    pygame.draw.circle(self.screen, Colors.ORANGE, center, radius)
+
+
+                # Gate
+                elif square == 'G':
+                    h = h//2
+                    box = [x0,y0,w,h]
+                    pygame.draw.rect(self.screen, Colors.WHITE,box)
 
     def get_starts(self):
         pass
@@ -207,6 +240,10 @@ class BetterMaps:
         # Enemy
         if pygame.key.get_pressed()[pygame.K_e]:
             mode = 'E'
+
+        # Gate
+        if pygame.key.get_pressed()[pygame.K_g]:
+            mode = 'G'
 
         # Save game
         if pygame.key.get_pressed()[pygame.K_s]:

@@ -3,7 +3,8 @@ class Colors:
     RED = (250, 0, 0)
     BLUE = (0, 0, 200)
     BROWN = (66, 22, 14)
-    ORANGE = (150,100,0)
+    ORANGE = (220,150,0)
+    PINK = (255,0,255)
     GRAY = (120, 120, 120)
     YELLOW = (255,255,0)
     LIGHTBLUE = (120, 120, 210)
@@ -12,10 +13,7 @@ class Colors:
 
 
 class Properties:
-    # pyagme related
-    # WINDOWWIDTH = 1200
-    # WINDOWHEIGHT = 800
-
+    # Game Window
     WINDOWWIDTH = 600
     WINDOWHEIGHT = 800
 
@@ -25,7 +23,10 @@ class Properties:
 
     SCORE_TEXT = [0,0]
     SCORE_NUMS = [250,0]
-
+    LIVES_LEVEL = WINDOWHEIGHT - WINDOWBUFFERBOTTOM - 10
+    LIVES_TEXT = [10, LIVES_LEVEL]
+    LIVES_START = 120
+    LIVES_GAP = 30
     # Keymap
     LEFTARROW = 80
     UPARROW = 82
@@ -33,8 +34,12 @@ class Properties:
     DOWNARROW = 81
 
     # Characters
-    CHARACTERRADIUS = 15
+    CHARACTERRADIUS = 12
     PLAYERSPEED = 10
+    ENEMYSPEED = 4
+    GHOST_SCARED_SPEED = 2
+    GHOST_SCARED_TIME = 12
+    GHOST_CAUGHT_SPEED = 10
 
     # Game Map related
     WALLGAP = CHARACTERRADIUS * 3
@@ -43,7 +48,7 @@ class Properties:
     ORBSIZE = int(CHARACTERRADIUS/5)
     POWERUPSIZE = int(CHARACTERRADIUS/2)
 
-    TOKEN_SCORE = 125
+    TOKEN_SCORE = 135
 
     # Derived Properties
     def map_resize(self, X_Space,Y_Space):
