@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
+import torch.nn.functional as Function
 import os
 
 
@@ -12,7 +12,7 @@ class Linear_QNet(nn.Module):
         self.linear2 = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        x = F.relu(self.linear1(x))
+        x = Function.relu(self.linear1(x))
         x = self.linear2(x)
         return x
 
@@ -24,6 +24,11 @@ class Linear_QNet(nn.Module):
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.state_dict(), file_name)
 
+    def load(self, file_name='model.pth'):
+        model_path = 'model/' + file_name
+        # model = Linear_QNet(845,1556,4)
+        self.load_state_dict(torch.load(model_path))
+        self.eval()
 
 class QTrainer:
     def __init__(self, model, lr, gamma):

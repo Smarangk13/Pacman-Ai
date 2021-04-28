@@ -12,6 +12,7 @@ class Enemy(Player):
     sleeping = True
     sleeptime = 0
     start_pos = [1,1]
+    id = 0
 
     # Other ghosts have sub ojbectives like going to corner etc
     objective_start_time = 0
@@ -22,7 +23,6 @@ class Enemy(Player):
     inky_last_switch = 0
 
     def __init__(self, type = 'Inky'):
-        radius = Properties.CHARACTERRADIUS
         self.name = type
         super().__init__()
         self.behaviour()
@@ -30,15 +30,19 @@ class Enemy(Player):
     def behaviour(self):
         if self.name == Properties.REDGHOST:
             self.sleeptime = 5
+            self.id = 0
 
         if self.name == Properties.BLUEGHOST:
             self.sleeptime = 10
+            self.id = 1
 
         if self.name == Properties.PINKGHOST:
             self.sleeptime = 20
+            self.id = 2
 
         if self.name == Properties.ORANGEGHOST:
             self.sleeptime = 25
+            self.id = 3
 
     def opposite(self, direction):
         if direction == 'Right':

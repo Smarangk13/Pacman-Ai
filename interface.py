@@ -7,9 +7,9 @@ from game_grid import GamePlay
 from model import Linear_QNet, QTrainer
 from tracker import plot
 
-MAX_MEMORY = 100_000
+MAX_MEMORY = 500_000
 BATCH_SIZE = 1000
-LR = 0.001
+LR = 0.0005
 
 
 class Agent:
@@ -18,13 +18,10 @@ class Agent:
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(845, 256, 4)
+        self.model = Linear_QNet(900, 1700, 4)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
         self.game = GamePlay()
-
-        # Reward
-        self.reward = 0
 
         # Inputs
         self.grid = []
@@ -40,21 +37,49 @@ class Agent:
         # actions options [0,1,0,0] - D
         # actions options [1,0,0,0] - U
 
+    def load_model(self, name='model.pth'):
+        self.model.load(name)
+
     def get_state(self):
         self.grid = self.game.map.grid
         grid = self.game.map.numerical1d(self.grid)
+
         player_pos = [self.game.pacman.x, self.game.pacman.y]
+        player_grid = list(self.game.map.find_grid(player_pos[0],player_pos[1]))
         player_lives = self.game.pacman.lives
+        player_speed = self.game.pacman.speed
+        player_dir = self.game.pacman.direction
+        direction = 0
+
+        if player_dir == 'Left':
+            direction = 1
+        elif player_dir == 'Up':
+            direction = 2
+        elif player_dir == 'Down':
+            direction = 3
+
         score = self.game.score
         enemies = len(self.game.enemies)
 
+        # Keep track of enemy pos and if they are chasing you
         enemypos_list = []
         for enemy in self.game.enemies:
-            self.enemypos_list.append(enemy.x)
-            self.enemypos_list.append(enemy.y)
+            chase = 0
+            if enemy.mode == 'Chase':
+                chase = 1
 
-        state = grid + player_pos + [player_lives]
-        state += [score]+ [enemies]
+            enemypos_list += [enemy.id, enemy.x, enemy.y, chase]
+
+        state = grid + player_pos + [player_lives, player_speed, direction] + player_grid
+        state += [score] + [enemies]
+
+        # Pad 0's at the end for consistent size
+        l = len(state) + len(enemypos_list)
+        zs = 900 - l
+        zeros = [0] * zs
+        state += zeros
+
+        # Keep enmy pos at end for consistent values when adding more meta data
         state += enemypos_list
 
         return np.array(state, dtype=int)
@@ -81,7 +106,7 @@ class Agent:
         self.epsilon = 80 - self.n_games
         final_move = [0, 0, 0, 0]
         if random.randint(0, 200) < self.epsilon:
-            move = random.randint(0, 2)
+            move = random.randint(0, 3)
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)
@@ -90,7 +115,6 @@ class Agent:
             final_move[move] = 1
 
         return final_move
-
 
     def train(self):
         plot_scores = []
@@ -109,12 +133,13 @@ class Agent:
             state_new = self.get_state()
 
             done = self.game.pacman.lives <= 0
+            reward = self.game.reward
 
             # train short memory
-            self.train_short_memory(state_old, final_move, self.reward, state_new, done)
+            self.train_short_memory(state_old, final_move, reward, state_new, done)
 
             # remember
-            self.remember(state_old, final_move, self.reward, state_new, done)
+            self.remember(state_old, final_move, reward, state_new, done)
 
             if done:
                 # train long memory, plot result
@@ -127,7 +152,8 @@ class Agent:
                     record = score
                     self.model.save()
 
-                print('Game', self.n_games, 'Score', score, 'Record:', record)
+                print('Game:', self.n_games, 'Record:', record)
+                print('Score:', score, 'Reward:', reward)
 
                 plot_scores.append(score)
                 total_score += score
@@ -138,5 +164,5 @@ class Agent:
 
 if __name__ == '__main__':
     neo = Agent()
+    neo.load_model()
     neo.train()
-

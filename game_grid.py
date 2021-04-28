@@ -17,13 +17,15 @@ class GamePlay:
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode([Properties.WINDOWWIDTH, Properties.WINDOWHEIGHT])
         self.pacman = Player()
+
         # For externally controlled games
         self.external = False
+        self.reward = 0
+        self.game_over = False
 
         self.game_font = pygame.font.SysFont('Terminal', 45)
 
         self.score = 0
-        self.reward = 0
 
         self.map = GameMap()
         self.map.load_map()
@@ -31,7 +33,7 @@ class GamePlay:
         self.map.color_grid()
 
         # Position player
-        self.pacman_drawing = pygame.image.load('pacman.png')
+        self.pacman_drawing = pygame.image.load('pics/pacman.png')
         self.player_pos = self.map.player_start
         self.pacman.x = self.player_pos[0]
         self.pacman.y = self.player_pos[1]
@@ -54,8 +56,8 @@ class GamePlay:
         self.pinky = pygame.image.load('pics/pinky.png')
         self.clyde = pygame.image.load('pics/clyde.png')
 
-        self.scared = pygame.image.load('scared.png')
-        self.caught = pygame.image.load('caught.png')
+        self.scared = pygame.image.load('pics/scared.png')
+        self.caught = pygame.image.load('pics/caught.png')
 
         # time related
         self.start_time = pygame.time.get_ticks()
@@ -64,6 +66,7 @@ class GamePlay:
 
     def restart(self):
         self.score = 0
+        self.reward = 0
 
         self.map = GameMap()
         self.map.load_map()
@@ -84,6 +87,12 @@ class GamePlay:
 
         self.enemies = []
         self.create_enemies()
+
+        self.start_time = pygame.time.get_ticks()
+        self.round_time = self.start_time
+        self.caught_mode_time = 0
+
+        self.game_over = False
 
     def create_enemies(self):
         while True:
@@ -148,6 +157,12 @@ class GamePlay:
 
         if key[pygame.K_r]:
             self.restart()
+
+    def allTokens(self):
+        if self.map.find_item('T') is None:
+            self.reward += 100000
+            return True
+        return False
 
     # Enemies can not warp
     def warp(self):
@@ -274,6 +289,7 @@ class GamePlay:
 
         elif current_tile == 'P':
             self.map.grid[row][col] = 'O'
+            self.score += 100
             self.caught_mode_time = pygame.time.get_ticks()
             for enemy in self.enemies:
                 enemy.mode = 'Run'
@@ -283,17 +299,17 @@ class GamePlay:
         for enemy in self.enemies:
             mode = enemy.mode
             if mode == 'Chase':
-                if enemy.name == 'Blinky':
+                if enemy.name == Properties.REDGHOST:
                     self.screen.blit(self.blinky, (enemy.x, enemy.y - offset))
                     # pygame.draw.rect(self.screen,Colors.RED,[enemy.x,enemy.y,15,15])
 
-                elif enemy.name == 'Inky':
+                elif enemy.name == Properties.BLUEGHOST:
                     self.screen.blit(self.inky, (enemy.x, enemy.y - offset))
 
-                elif enemy.name == 'Pinky':
+                elif enemy.name == Properties.PINKGHOST:
                     self.screen.blit(self.pinky, (enemy.x, enemy.y - offset))
 
-                elif enemy.name == 'Clyde':
+                elif enemy.name == Properties.ORANGEGHOST:
                     self.screen.blit(self.clyde, (enemy.x, enemy.y - offset))
 
             elif mode == 'Run':
@@ -323,6 +339,7 @@ class GamePlay:
         wait_time = enemy.sleeptime * 1000
         if time_passed < wait_time:
             enemy.stop_movement()
+            enemy.sleeping = True
         else:
             enemy.start_movement()
             enemy.sleeping = False
@@ -405,7 +422,7 @@ class GamePlay:
 
     def reset(self):
         time = pygame.time.get_ticks()
-        wait_time = time + 5000  # 5 seconds
+        wait_time = time + 4000  # 4 seconds
         while True:
             self.clock.tick(30)
             for event in pygame.event.get():
@@ -424,11 +441,11 @@ class GamePlay:
             self.show_HUD()
 
             time = pygame.time.get_ticks()
+            self.round_time = time
             if self.external:
-                self.reward -= 1000
+                self.reward -= 100000/(self.score + 1)
                 return
             if time > wait_time:
-                self.round_time = pygame.time.get_ticks()
                 self.gameLoop()
 
             pygame.display.flip()
@@ -479,12 +496,16 @@ class GamePlay:
             self.drawObjects()
             self.show_HUD()
 
-        self.reward = self.score * 15 - pygame.time.get_ticks()//4000
+        self.reward = self.score - (pygame.time.get_ticks()//4000)
 
         self.pacman.move()
         self.moveEnemies()
         self.collisions(self.pacman)
         self.update_map()
+
+        if self.pacman.lives <= 0 or self.allTokens():
+            self.game_over = True
+
         pygame.display.flip()
         self.screen.fill(Colors.BLACK)
 

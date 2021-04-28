@@ -31,7 +31,9 @@ class BetterMaps:
 
         self.grid = []
 
-        self.player_start = [0,0]
+        self.player_start = [0, 0]
+
+        self.grid1d = []
 
     def make_grid(self, grid):
         grid = grid
@@ -50,7 +52,7 @@ class BetterMaps:
         gameWidth = endX - startX
         squareGapX = gameWidth // self.squaresX
         # verticalLines = [x for x in range(startX, endX + 5, squareGapX)]  # Adding 5 to accomadate last line
-        verticalLines = [startX + (x *squareGapX ) for x in range(self.squaresX + 1)]
+        verticalLines = [startX + (x * squareGapX) for x in range(self.squaresX + 1)]
 
         startY = self.Game_Props.WINDOWBUFFERTOP
         endY = self.Game_Props.WINDOWHEIGHT - self.Game_Props.WINDOWBUFFERBOTTOM
@@ -67,14 +69,14 @@ class BetterMaps:
         for row in range(len(self.grid)):
             for col in range(len(self.grid[row])):
                 if self.grid[row][col] == item:
-                    return row,col
+                    return row, col
 
         return None
 
-    def find_coordinates(self,pos_row, pos_col):
+    def find_coordinates(self, pos_row, pos_col):
         y = self.hLines[pos_row]
         x = self.vLines[pos_col]
-        return x,y
+        return x, y
 
     # Find which square of the grid the click corresponds to
     def find_grid(self, mx, my):
@@ -167,13 +169,13 @@ class BetterMaps:
                 # Powerup
                 elif square == 'P':
                     radius = ((x1 - x0) // 2)
-                    pygame.draw.circle(self.screen,Colors.ORANGE,center,radius)
+                    pygame.draw.circle(self.screen, Colors.ORANGE, center, radius)
 
                 # Character
                 elif square == 'C':
                     radius = (x1 - x0) // 2
                     self.player_start = center
-                    pygame.draw.circle(self.screen,Colors.YELLOW,center,radius)
+                    pygame.draw.circle(self.screen, Colors.YELLOW, center, radius)
 
                 # Enemy - Inky
                 elif square == 'E':
@@ -198,9 +200,9 @@ class BetterMaps:
 
                 # Gate
                 elif square == 'G':
-                    h = h//2
-                    box = [x0,y0,w,h]
-                    pygame.draw.rect(self.screen, Colors.WHITE,box)
+                    h = h // 2
+                    box = [x0, y0, w, h]
+                    pygame.draw.rect(self.screen, Colors.WHITE, box)
 
     def get_starts(self):
         pass
@@ -316,10 +318,11 @@ class BetterMaps:
         self.squaresX = len(grid[0])
         self.gridlines()
 
+
     @staticmethod
     def numerical1d(grid):
         count = 0
-        items = {'W':0, 'O':1,'T':2,'P':3} # Fixed nums for consistent training
+        items = {'W': 0, 'O': 1, 'T': 2, 'P': 3}  # Fixed nums for consistent training
         grid1d = []
         for row in grid:
             for elem in row:
@@ -332,6 +335,7 @@ class BetterMaps:
                     count += 1
                 grid1d.append(coded)
         return grid1d
+
 
 if __name__ == '__main__':
     # Official map = 28 X 30
