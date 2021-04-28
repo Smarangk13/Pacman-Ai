@@ -340,5 +340,5 @@ class BetterMaps:
 if __name__ == '__main__':
     # Official map = 28 X 30
     mapMaker = BetterMaps()
-    mapMaker.make_grid((27, 15))
+    mapMaker.make_grid((12, 12))
     mapMaker.maker()

@@ -22,6 +22,7 @@ class GamePlay:
         self.external = False
         self.reward = 0
         self.game_over = False
+        self.perfect_games = 0
 
         self.game_font = pygame.font.SysFont('Terminal', 45)
 
@@ -161,6 +162,7 @@ class GamePlay:
     def allTokens(self):
         if self.map.find_item('T') is None:
             self.reward += 100000
+            self.perfect_games += 1
             return True
         return False
 
@@ -502,6 +504,11 @@ class GamePlay:
         self.moveEnemies()
         self.collisions(self.pacman)
         self.update_map()
+
+        # current_time = pygame.time.get_ticks()
+        # if current_time - self.round_time > 90 * 1000:
+        #     self.pacman.lives -= 1
+        #     self.reset()
 
         if self.pacman.lives <= 0 or self.allTokens():
             self.game_over = True

@@ -4,7 +4,7 @@ import numpy as np
 from collections import deque
 from Constants import Properties
 from game_grid import GamePlay
-from model import Linear_QNet, QTrainer
+from torch_model import Linear_QNet, QTrainer
 from tracker import plot
 
 MAX_MEMORY = 500_000
@@ -18,7 +18,9 @@ class Agent:
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = Linear_QNet(900, 1700, 4)
+        self.input_size = 200
+        # self.model = Linear_QNet(900, 1700, 4) # Full Map
+        self.model = Linear_QNet(self.input_size, 400, 4) # Tiny Map
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
         self.game = GamePlay()
@@ -68,14 +70,14 @@ class Agent:
             if enemy.mode == 'Chase':
                 chase = 1
 
-            enemypos_list += [enemy.id, enemy.x, enemy.y, chase]
+            enemypos_list += [enemy.id, enemy.x, enemy.y, chase, int(enemy.sleeping)]
 
         state = grid + player_pos + [player_lives, player_speed, direction] + player_grid
         state += [score] + [enemies]
 
         # Pad 0's at the end for consistent size
         l = len(state) + len(enemypos_list)
-        zs = 900 - l
+        zs = self.input_size - l
         zeros = [0] * zs
         state += zeros
 
@@ -103,9 +105,9 @@ class Agent:
 
     def get_action(self, state):
         # random moves: tradeoff exploration / exploitation
-        self.epsilon = 80 - self.n_games
+        self.epsilon = 40 - self.n_games # 80 orignally
         final_move = [0, 0, 0, 0]
-        if random.randint(0, 200) < self.epsilon:
+        if random.randint(0, 120) < self.epsilon: # 200
             move = random.randint(0, 3)
             final_move[move] = 1
         else:
@@ -132,8 +134,12 @@ class Agent:
             self.game.game_step(final_move, True)
             state_new = self.get_state()
 
-            done = self.game.pacman.lives <= 0
+            done = self.game.game_over
             reward = self.game.reward
+
+            if self.game.perfect_games > 7:
+                print('TRAINING COMPLETE!!')
+                break
 
             # train short memory
             self.train_short_memory(state_old, final_move, reward, state_new, done)
