@@ -1,6 +1,5 @@
 import random
 import time
-from Shapes import Circle
 from Constants import Properties
 from Player import Player
 from searcher import finder

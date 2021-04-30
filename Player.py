@@ -1,4 +1,3 @@
-from Shapes import Circle
 from Constants import Properties
 
 

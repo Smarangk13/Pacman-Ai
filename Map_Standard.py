@@ -33,8 +33,6 @@ class BetterMaps:
 
         self.player_start = [0, 0]
 
-        self.grid1d = []
-
     def make_grid(self, grid):
         grid = grid
         self.squaresX = grid[0]
@@ -291,7 +289,7 @@ class BetterMaps:
             self.screen.fill(Colors.BLACK)
 
     def save_map(self):
-        file_name = 'map.txt'
+        file_name = input('Enter the file name') + '.txt'
         fw = open(file_name, 'w')
 
         gridmap = ''
@@ -317,7 +315,6 @@ class BetterMaps:
         self.squaresY = len(grid)
         self.squaresX = len(grid[0])
         self.gridlines()
-
 
     @staticmethod
     def numerical1d(grid):

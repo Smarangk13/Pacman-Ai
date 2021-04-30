@@ -3,7 +3,7 @@ import random
 import numpy as np
 from collections import deque
 from Constants import Properties
-from game_grid import GamePlay
+from game import GamePlay
 from torch_model import Linear_QNet, QTrainer
 from tracker import plot
 
@@ -18,12 +18,16 @@ class Agent:
         self.epsilon = 0  # randomness
         self.gamma = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.input_size = 200
-        # self.model = Linear_QNet(900, 1700, 4) # Full Map
-        self.model = Linear_QNet(self.input_size, 400, 4) # Tiny Map
-        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
         self.game = GamePlay()
+
+        self.input_size = len(self.game.map.grid) * len(self.game.map.grid[0]) + 50
+        hiddel_neurons = int(self.input_size * 1.8)
+
+        # Define model
+        self.model = Linear_QNet(self.input_size, hiddel_neurons, 4) # Full Map
+        # self.model = Linear_QNet(self.input_size, 400, 4) # Tiny Map 900 for full
+        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
         # Inputs
         self.grid = []
@@ -170,5 +174,6 @@ class Agent:
 
 if __name__ == '__main__':
     neo = Agent()
-    neo.load_model()
+    # Uncomment to load in a partially trained model
+    # neo.load_model()
     neo.train()

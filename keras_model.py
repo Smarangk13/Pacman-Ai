@@ -3,7 +3,7 @@ from tensorflow import keras
 from keras import layers
 from keras.utils import np_utils
 from keras.models import Sequential
-from keras.layers import Activation, BatchNormalization, Dense,Dropout,Flatten,Conv2D
+from keras.layers import Activation, BatchNormalization, Dense, Dropout, Flatten, Conv2D
 
 # Configuration paramaters for the whole setup
 seed = 42
@@ -12,7 +12,7 @@ epsilon = 1.0  # Epsilon greedy parameter
 epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 1.0  # Maximum epsilon greedy parameter
 epsilon_interval = (
-    epsilon_max - epsilon_min
+        epsilon_max - epsilon_min
 )  # Rate at which to reduce chance of random action being taken
 batch_size = 32  # Size of batch taken from replay buffer
 max_steps_per_episode = 10000
@@ -36,8 +36,8 @@ def create_q_model():
 
     return keras.Model(inputs=inputs, outputs=action)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # The first model makes the predictions for Q-values which are used to
     # make a action.
     model = create_q_model()
